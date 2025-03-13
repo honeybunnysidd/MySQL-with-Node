@@ -2,12 +2,15 @@ const express = require("express");
 const path = require("path");
 const { faker } = require("@faker-js/faker");
 const mysql = require("mysql2");
+const methodOverride = require("method-override");
 
 const app = express();
 
+app.use(methodOverride("_method"));
+
 //express understand the client's data for all type of Request
 app.use(express.urlencoded({ extended: true }));
-app.use(express.json());
+// app.use(express.json());
 
 //Set view engine to ejs
 app.set("view engine", "ejs");
@@ -94,21 +97,81 @@ connection.query(newQuery, [allUsers], (err, result) => {
 app.get("/", (req, res) => {
   let q = `SELECT count(id) FROM users`;
 
-   try {
+  try {
     connection.query(q, (err, result) => {
       if (err) {
         throw err;
       }
       let totalUser = result[0]["count(id)"];
-      res.render("home", {totalUser});
+      res.render("home", { totalUser });
     });
   } catch (err) {
     res.send("Some error in DB");
   }
 });
 
+//show all users id email
 app.get("/user", (req, res) => {
-  res.render("user.ejs");
+  let q = `SELECT * FROM users`;
+  try {
+    connection.query(q, (err, result) => {
+      if (err) {
+        throw err;
+      }
+      res.render("user", { result });
+    });
+  } catch (err) {
+    res.send("Some error occur");
+  }
+});
+
+//Edit exisitng data through user's password
+app.get("/user/:id/edit", (req, res) => {
+  let { id } = req.params;
+
+  let q = `SELECT * FROM users WHERE id = "${id}"`;
+
+  try {
+    connection.query(q, (err, result) => {
+      if (err) {
+        throw err;
+      }
+      let user = result[0];
+      res.render("edit", { user });
+    });
+  } catch (err) {
+    res.send("Some error occur");
+  }
+});
+
+app.patch("/user/:id", (req, res) => {
+  let { id } = req.params;
+  let { username, password } = req.body;
+
+  let q = `SELECT * FROM users WHERE id = "${id}"`;
+
+  try {
+    connection.query(q, (err, result) => {
+      if (err) {
+        throw err;
+      }
+      let user = result[0];
+      if (password != user.password) {
+        res.send("Password incorrect");
+      } else {
+        let q2 = `UPDATE users SET username = "${username}" WHERE id = "${id}"`;
+
+        connection.query(q2, (err, result) => {
+          if (err) {
+            throw err;
+          }
+          res.redirect("/user");
+        });
+      }
+    });
+  } catch (err) {
+    res.send("Some error occur");
+  }
 });
 
 app.listen(3000, () => {
