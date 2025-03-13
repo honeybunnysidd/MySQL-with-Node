@@ -1,6 +1,22 @@
 const express = require("express");
+const path = require("path");
 const { faker } = require("@faker-js/faker");
 const mysql = require("mysql2");
+
+const app = express();
+
+//express understand the client's data for all type of Request
+app.use(express.urlencoded({ extended: true }));
+app.use(express.json());
+
+//Set view engine to ejs
+app.set("view engine", "ejs");
+
+//Set path of ejs file
+app.set("views", path.join(__dirname, "views"));
+
+//set path of static file(CSS and Js)
+app.use(express.static(path.join(__dirname, "public")));
 
 //Creating fake data
 let createRandomUser = () => {
@@ -53,6 +69,7 @@ connection.query(quer, [users], (err, result) => {
 */
 
 // INSERT data using faker
+/*
 let newQuery = "INSERT INTO users (id,username,email ,password) VALUES ?";
 
 let allUsers = [];
@@ -68,6 +85,32 @@ connection.query(newQuery, [allUsers], (err, result) => {
   }
   console.log(result);
 });
+*/
 
 //End the connection
-connection.end();
+// connection.end();
+
+//Home routes
+app.get("/", (req, res) => {
+  let q = `SELECT count(id) FROM users`;
+
+   try {
+    connection.query(q, (err, result) => {
+      if (err) {
+        throw err;
+      }
+      let totalUser = result[0]["count(id)"];
+      res.render("home", {totalUser});
+    });
+  } catch (err) {
+    res.send("Some error in DB");
+  }
+});
+
+app.get("/user", (req, res) => {
+  res.render("user.ejs");
+});
+
+app.listen(3000, () => {
+  console.log("Server is listening on port 3000");
+});
