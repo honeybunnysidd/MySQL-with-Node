@@ -2,26 +2,44 @@
 
 Follow these steps to set up and run the project locally:
 
-1.  **Clone the Repository:**
+
+0.  **Create Database in your MySQL Workbench:**
+
+     **(User :root and Password: Siddhartha123@)**
+    -----------------------------------------
+   
+    ```
+    CREATE DATABASE myapp;
+    USE myapp;
+    CREATE TABLE users (
+    id varchar(50) primary key,
+    username varchar(50) unique,
+    email varchar(50) unique,
+    password varchar(50) not null
+    );
+    ```
+     -----------------------------------------
+
+2.  **Clone the Repository:**
 
     ```bash
     git clone https://github.com/honeybunnysidd/MySQL-with-Node.git
      cd "mysql-with-node"
     ```
 
-2.  **Install Dependencies:**
+3.  **Install Dependencies:**
 
     ```bash
     npm install
     ```
 
-3.  **Run the Application:**
+4.  **Run the Application:**
 
     ```bash
     node app.js
     ```
 
-4.  **Open in Your Browser:**
+5.  **Open in Your Browser:**
 
     Open `http://localhost:3000` in your web browser.
 
