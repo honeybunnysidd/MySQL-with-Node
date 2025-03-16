@@ -229,7 +229,7 @@ app.delete("/user/:id/", (req, res) => {
     connection.query(q, (err, result) => {
       if (err) throw err;
       if (password == result[0].password && email == result[0].email) {
-        let q2 = `DELETE FROM users WHERE id = "${id}`;
+        let q2 = `DELETE FROM users WHERE id = "${id}"`;
 
         connection.query(q2, (err, result) => {
           res.redirect("/user");
