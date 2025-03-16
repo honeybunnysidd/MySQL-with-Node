@@ -157,20 +157,91 @@ app.patch("/user/:id", (req, res) => {
       }
       let user = result[0];
       if (password != user.password) {
-        res.send("Password incorrect");
+        let code = `<p>Password is incorrect<p> <a href = "http://localhost:3000/user/${id}/edit"> <button> Back </button></a>`;
+
+        res.send(code);
       } else {
         let q2 = `UPDATE users SET username = "${username}" WHERE id = "${id}"`;
 
-        connection.query(q2, (err, result) => {
-          if (err) {
-            throw err;
-          }
-          res.redirect("/user");
-        });
+        try {
+          connection.query(q2, (err, result) => {
+            if (err) {
+              throw err;
+            }
+            res.redirect("/user");
+          });
+        } catch (err) {
+          res.send("err: ", err);
+        }
       }
     });
   } catch (err) {
     res.send("Some error occur");
+  }
+});
+
+//Add new user
+app.get("/newuser", (req, res) => {
+  res.render("newUser");
+});
+
+app.post("/newuser", (req, res) => {
+  let { username, password, email } = req.body;
+  let id = faker.string.uuid();
+
+  let q = `INSERT INTO users (id, username,password,email) VALUES ("${id}","${username}","${password}","${email}")`;
+
+  try {
+    connection.query(q, (err, result) => {
+      if (err) throw err;
+      res.redirect("/user");
+    });
+  } catch (err) {
+    console.log("err is : ", err);
+  }
+});
+
+//Delete existing user with email and password
+app.get("/user/:id/delete", (req, res) => {
+  let { id } = req.params;
+
+  let q = `SELECT * FROM users WHERE id = "${id}"`;
+
+  try {
+    connection.query(q, (err, result) => {
+      if (err) {
+        throw err;
+      }
+      let user = result[0];
+      res.render("destroy", { user });
+    });
+  } catch (err) {
+    res.send("Some error occur");
+  }
+});
+
+app.delete("/user/:id/", (req, res) => {
+  let { password, email } = req.body;
+  let { id } = req.params;
+  let q = `SELECT * FROM users WHERE id = "${id}"`;
+
+  try {
+    connection.query(q, (err, result) => {
+      if (err) throw err;
+      if (password == result[0].password && email == result[0].email) {
+        let q2 = `DELETE FROM users WHERE id = "${id}`;
+
+        connection.query(q2, (err, result) => {
+          res.redirect("/user");
+        });
+      } else {
+        let code = `<p>Email or password is incorrect<p> <a href = "http://localhost:3000/user/${id}/delete"> <button> Back </button></a>`;
+
+        res.send(code);
+      }
+    });
+  } catch (err) {
+    res.send("Some error occured");
   }
 });
 
